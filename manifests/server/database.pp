@@ -5,7 +5,12 @@ define postgresql::server::database(
   $tablespace = undef,
   $encoding   = $postgresql::server::encoding,
   $locale     = $postgresql::server::locale,
-  $istemplate = false
+  $istemplate = false,
+  $connect_user = undef,
+  $connect_password = undef,
+  $connect_host = undef,
+  $connect_port = undef,
+  $connect_db = undef,
 ) {
   $createdb_path = $postgresql::server::createdb_path
   $user          = $postgresql::server::user
@@ -18,6 +23,11 @@ define postgresql::server::database(
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
+    connect_user => $connect_user,
+    connect_password => $connect_password,
+    connect_host => $connect_host,
+    connect_port => $connect_port,
+    db => $connect_db,
   }
 
   # Optionally set the locale switch. Older versions of createdb may not accept
@@ -59,7 +69,6 @@ define postgresql::server::database(
   # This will prevent users from connecting to the database unless they've been
   #  granted privileges.
   postgresql_psql {"REVOKE ${public_revoke_privilege} ON DATABASE \"${dbname}\" FROM public":
-    db          => $user,
     refreshonly => true,
   }
 

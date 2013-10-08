@@ -51,16 +51,23 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
   end
 
   def run_sql_command(sql)
+    environment = Hash.new
+    
+    environment.store("PGUSER",     resource[:connect_user])     if resource[:connect_user]
+    environment.store("PGPASSWORD", resource[:connect_password]) if resource[:connect_password]
+    environment.store("PGHOST",     resource[:connect_host])     if resource[:connect_host]
+    environment.store("PGPORT",     resource[:connect_port])     if resource[:connect_port]
+
     command = [resource[:psql_path]]
     command.push("-d", resource[:db]) if resource[:db]
     command.push("-t", "-c", sql)
 
     if resource[:cwd]
       Dir.chdir resource[:cwd] do
-        Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group])
+        Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group], { :custom_environment => environment } )
       end
     else
-      Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group])
+      Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group], { :custom_environment => environment } )
     end
   end
 
