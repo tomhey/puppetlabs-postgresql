@@ -6,11 +6,7 @@ define postgresql::server::database(
   $encoding   = $postgresql::server::encoding,
   $locale     = $postgresql::server::locale,
   $istemplate = false,
-  $connect_user = undef,
-  $connect_password = undef,
-  $connect_host = undef,
-  $connect_port = undef,
-  $connect_db = undef,
+  $connect_settings = undef,
 ) {
   $createdb_path = $postgresql::server::createdb_path
   $user          = $postgresql::server::user
@@ -23,11 +19,7 @@ define postgresql::server::database(
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
-    connect_user => $connect_user,
-    connect_password => $connect_password,
-    connect_host => $connect_host,
-    connect_port => $connect_port,
-    db => $connect_db,
+    connect_settings => $connect_settings,
   }
 
   # Optionally set the locale switch. Older versions of createdb may not accept

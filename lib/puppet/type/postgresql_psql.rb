@@ -64,20 +64,8 @@ Puppet::Type.newtype(:postgresql_psql) do
     defaultto("postgres")
   end
 
-  newparam(:connect_user) do
-    desc "The postgres user"
-  end
-
-  newparam(:connect_password) do
-    desc "The postgres password"
-  end
-
-  newparam(:connect_host) do
-    desc "The postgres server"
-  end
-
-  newparam(:connect_port) do
-    desc "The postgres listening port"
+  newparam(:connect_settings) do
+    desc "Connection settings that will be used when connecting to postgres"
   end
 
   newparam(:cwd, :parent => Puppet::Parameter::Path) do

@@ -51,15 +51,10 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
   end
 
   def run_sql_command(sql)
-    environment = Hash.new
-    
-    environment.store("PGUSER",     resource[:connect_user])     if resource[:connect_user]
-    environment.store("PGPASSWORD", resource[:connect_password]) if resource[:connect_password]
-    environment.store("PGHOST",     resource[:connect_host])     if resource[:connect_host]
-    environment.store("PGPORT",     resource[:connect_port])     if resource[:connect_port]
+    environment = resource[:connect_settings] ? resource[:connect_settings] : Hash.new
 
     command = [resource[:psql_path]]
-    command.push("-d", resource[:db]) if resource[:db]
+    command.push("-d", resource[:db]) if ( resource[:db] and !environment.key?('PGDATABASE') )
     command.push("-t", "-c", sql)
 
     if resource[:cwd]

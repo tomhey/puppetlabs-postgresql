@@ -7,10 +7,7 @@ define postgresql::server::grant (
   $object_name = $db,
   $psql_db     = $postgresql::server::user,
   $psql_user   = $postgresql::server::user,
-  $connect_user = undef,
-  $connect_password = undef,
-  $connect_host = undef,
-  $connect_port = undef,
+  $connect_settings = undef,
 ) {
   $group     = $postgresql::server::group
   $psql_path = $postgresql::server::psql_path
@@ -71,10 +68,7 @@ define postgresql::server::grant (
     psql_user  => $psql_user,
     psql_group => $group,
     psql_path  => $psql_path,
-    connect_user => $connect_user,
-    connect_password => $connect_password,
-    connect_host => $connect_host,
-    connect_port => $connect_port,
+    connect_settings => $connect_settings,
     unless     => "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
     require    => Class['postgresql::server']
   }

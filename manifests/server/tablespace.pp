@@ -3,11 +3,7 @@ define postgresql::server::tablespace(
   $location,
   $owner   = undef,
   $spcname = $title,
-  $connect_user = undef,
-  $connect_password = undef,
-  $connect_host = undef,
-  $connect_port = undef,
-  $connect_db = undef,
+  $connect_settings = undef,
 ) {
   $user      = $postgresql::server::user
   $group     = $postgresql::server::group
@@ -17,11 +13,7 @@ define postgresql::server::tablespace(
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
-    connect_user => $connect_user,
-    connect_password => $connect_password,
-    connect_host => $connect_host,
-    connect_port => $connect_port,
-    db => $connect_db,
+    connect_settings => $connect_settings,
   }
 
   if ($owner == undef) {

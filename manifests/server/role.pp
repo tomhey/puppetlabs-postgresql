@@ -9,10 +9,7 @@ define postgresql::server::role(
   $replication      = false,
   $connection_limit = '-1',
   $username         = $title,
-  $connect_user     = undef,
-  $connect_password = undef,
-  $connect_host     = undef,
-  $connect_port     = undef,
+  $connect_settings = undef,
 ) {
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group
@@ -35,10 +32,7 @@ define postgresql::server::role(
     psql_user  => $psql_user,
     psql_group => $psql_group,
     psql_path  => $psql_path,
-    connect_user => $connect_user,
-    connect_password => $connect_password,
-    connect_host => $connect_host,
-    connect_port => $connect_port,
+    connect_settings => $connect_settings,
     require    => [ Postgresql_psql["CREATE ROLE \"${username}\" ${password_sql} ${login_sql} ${createrole_sql} ${createdb_sql} ${superuser_sql} ${replication_sql} CONNECTION LIMIT ${connection_limit}"], Class['postgresql::server'] ],
   }
 
