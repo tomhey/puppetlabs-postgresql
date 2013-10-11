@@ -1,5 +1,6 @@
 # Manage a database grant. See README.md for more details.
 define postgresql::server::database_grant(
+  $ensure    = 'present',
   $privilege,
   $db,
   $role,
@@ -8,6 +9,7 @@ define postgresql::server::database_grant(
   $connect_settings = undef,
 ) {
   postgresql::server::grant { "database:${name}":
+    ensure      => $ensure,
     role        => $role,
     db          => $db,
     privilege   => $privilege,

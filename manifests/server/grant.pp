@@ -1,5 +1,6 @@
 # Define for granting permissions to roles. See README.md for more details.
 define postgresql::server::grant (
+  $ensure      = 'present',
   $role,
   $db,
   $privilege   = undef,
@@ -62,22 +63,53 @@ define postgresql::server::grant (
     'ALL'   => 'CREATE',
     default => $_privilege,
   }
-  $grant_cmd = "GRANT ${_privilege} ON ${_object_type} \"${object_name}\" TO \"${role}\""
-  postgresql_psql { $grant_cmd:
-    db         => $on_db,
-    psql_user  => $psql_user,
-    psql_group => $group,
-    psql_path  => $psql_path,
-    connect_settings => $connect_settings,
-    unless     => "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
-    require    => Class['postgresql::server']
+
+  if ($ensure == 'present') {
+
+    $grant_cmd = "GRANT ${_privilege} ON ${_object_type} \"${object_name}\" TO \"${role}\""
+    postgresql_psql { $grant_cmd:
+      db         => $on_db,
+      psql_user  => $psql_user,
+      psql_group => $group,
+      psql_path  => $psql_path,
+      connect_settings => $connect_settings,
+      unless     => "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
+      require    => Class['postgresql::server']
+    }
+  
+    if($role != undef and defined(Postgresql::Server::Role[$role])) {
+      Postgresql::Server::Role[$role]->Postgresql_psql[$grant_cmd]
+    }
+  
+    if($db != undef and defined(Postgresql::Server::Database[$db])) {
+      Postgresql::Server::Database[$db]->Postgresql_psql[$grant_cmd]
+    }
+
+  } elsif ($ensure == 'absent') {
+
+    $revoke_cmd = "REVOKE ${_privilege} ON ${_object_type} \"${object_name}\" FROM \"${role}\""
+    postgresql_psql { $revoke_cmd:
+      db         => $on_db,
+      psql_user  => $psql_user,
+      psql_group => $group,
+      psql_path  => $psql_path,
+      connect_settings => $connect_settings,
+      onlyif     => "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
+      require    => Class['postgresql::server']
+    }
+  
+    if($role != undef and defined(Postgresql::Server::Role[$role])) {
+      Postgresql::Server::Role[$role]<-Postgresql_psql[$revoke_cmd]
+    }
+  
+    if($db != undef and defined(Postgresql::Server::Database[$db])) {
+      Postgresql::Server::Database[$db]<-Postgresql_psql[$revoke_cmd]
+    }
+
+  } else {
+
+     fail("Unknown value for ensure '${ensure}'.")
+
   }
 
-  if($role != undef and defined(Postgresql::Server::Role[$role])) {
-    Postgresql::Server::Role[$role]->Postgresql_psql[$grant_cmd]
-  }
-
-  if($db != undef and defined(Postgresql::Server::Database[$db])) {
-    Postgresql::Server::Database[$db]->Postgresql_psql[$grant_cmd]
-  }
 }

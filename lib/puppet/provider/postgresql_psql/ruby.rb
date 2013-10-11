@@ -1,38 +1,68 @@
 Puppet::Type.type(:postgresql_psql).provide(:ruby) do
 
   def command()
-    if ((! resource[:unless]) or (resource[:unless].empty?))
+
+    unless_check = false
+    onlyif_check = true
+
+    if ( resource[:unless] and !resource[:unless].empty? )
+
+      output, status = run_check_sql_command(resource[:unless])
+
+      if status != 0
+        self.fail("Error evaluating 'unless' clause: '#{output}'")
+      end
+      result_count = output.strip.to_i
+
+      # The 'unless' query indicates we should not execute
+      #  the command by returning rows
+      if result_count > 0
+        unless_check = true
+      end
+
+    end
+
+    if ( resource[:onlyif] and !resource[:onlyif].empty? )
+
+      output, status = run_check_sql_command(resource[:onlyif])
+
+      if status != 0
+        self.fail("Error evaluating 'onlyif' clause: '#{output}'")
+      end
+      result_count = output.strip.to_i
+
+      # The 'onlyif' query indicates we should execute
+      #  the command by returning rows
+      if result_count < 1
+        onlyif_check = false
+      end
+
+    end
+
+    if ( !unless_check and onlyif_check ) 
+
       if (resource.refreshonly?)
-        # So, if there's no 'unless', and we're in "refreshonly" mode,
-        # we need to return the target command here.  If we don't,
-        # then Puppet will generate an event indicating that this
-        # property has changed.
+        # We're in "refreshonly" mode, we need to return the 
+        #  target command here.  If we don't, then Puppet will 
+        #  generate an event indicating that this property has 
+        #  changed.
         return resource[:command]
       end
 
       # if we're not in refreshonly mode, then we return nil,
-      # which will cause Puppet to sync this property.  This
-      # is what we want if there is no 'unless' value specified.
+      #  which will cause Puppet to sync this property.  
       return nil
-    end
 
-    output, status = run_unless_sql_command(resource[:unless])
+    else
 
-    if status != 0
-      self.fail("Error evaluating 'unless' clause: '#{output}'")
-    end
-    result_count = output.strip.to_i
-    if result_count > 0
-      # If the 'unless' query returned rows, then we don't want to execute
-      # the 'command'.  Returning the target 'command' here will cause
-      # Puppet to treat this property as already being 'insync?', so it
-      # won't call the setter to run the 'command' later.
+      # Either the unless test returned true or the onlyif test
+      #  returned false, return 'command' here will cause
+      #  Puppet to treat this property as already being 'insync?',
+      #  so it  won't call the setter to run the 'command' later.
       return resource[:command]
+
     end
 
-    # Returning 'nil' here will cause Puppet to see this property
-    # as out-of-sync, so it will call the setter later.
-    nil
   end
 
   def command=(val)
@@ -44,8 +74,8 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
   end
 
 
-  def run_unless_sql_command(sql)
-    # for the 'unless' queries, we wrap the user's query in a 'SELECT COUNT',
+  def run_check_sql_command(sql)
+    # for the 'unless' or 'onlyif' queries, we wrap the user's query in a 'SELECT COUNT',
     # which makes it easier to parse and process the output.
     run_sql_command('SELECT COUNT(*) FROM (' <<  sql << ') count')
   end
