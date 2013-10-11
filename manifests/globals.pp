@@ -20,6 +20,7 @@ class postgresql::globals (
   $psql_path            = undef,
   $pg_hba_conf_path     = undef,
   $postgresql_conf_path = undef,
+  $default_connection_settings = undef,
 
   $pg_hba_conf_defaults = undef,
 

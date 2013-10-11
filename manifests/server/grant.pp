@@ -7,7 +7,7 @@ define postgresql::server::grant (
   $object_name = $db,
   $psql_db     = $postgresql::server::user,
   $psql_user   = $postgresql::server::user,
-  $connect_settings = undef,
+  $connect_settings = $postgresql::server::default_connection_settings,
 ) {
   $group     = $postgresql::server::group
   $psql_path = $postgresql::server::psql_path

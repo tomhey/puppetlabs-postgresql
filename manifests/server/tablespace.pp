@@ -3,7 +3,7 @@ define postgresql::server::tablespace(
   $location,
   $owner   = undef,
   $spcname = $title,
-  $connect_settings = undef,
+  $connect_settings = $postgresql::server::default_connection_settings,
 ) {
   $user      = $postgresql::server::user
   $group     = $postgresql::server::group

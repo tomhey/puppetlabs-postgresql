@@ -9,7 +9,7 @@ define postgresql::server::role(
   $replication      = false,
   $connection_limit = '-1',
   $username         = $title,
-  $connect_settings = undef,
+  $connect_settings = $postgresql::server::default_connection_settings,
 ) {
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group

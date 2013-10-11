@@ -6,7 +6,7 @@ define postgresql::server::database(
   $encoding   = $postgresql::server::encoding,
   $locale     = $postgresql::server::locale,
   $istemplate = false,
-  $connect_settings = undef,
+  $connect_settings = $postgresql::server::default_connection_settings,
 ) {
   $createdb_path = $postgresql::server::createdb_path
   $user          = $postgresql::server::user
