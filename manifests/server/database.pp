@@ -9,7 +9,6 @@ define postgresql::server::database(
   $istemplate = false,
   $connect_settings = $postgresql::server::default_connection_settings,
 ) {
-  $createdb_path = $postgresql::server::createdb_path
   $user          = $postgresql::server::user
   $group         = $postgresql::server::group
   $psql_path     = $postgresql::server::psql_path
