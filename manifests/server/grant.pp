@@ -8,7 +8,7 @@ define postgresql::server::grant (
   $object_name = $db,
   $psql_db     = $postgresql::server::user,
   $psql_user   = $postgresql::server::user,
-  $connect_settings = $postgresql::server::default_connection_settings,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $group     = $postgresql::server::group
   $psql_path = $postgresql::server::psql_path
@@ -81,6 +81,10 @@ define postgresql::server::grant (
       Postgresql::Server::Role[$role]->Postgresql_psql[$grant_cmd]
     }
   
+    if($role != undef and defined(Postgresql::Server::User[$role])) {
+      Postgresql::Server::User[$role]->Postgresql_psql[$grant_cmd]
+    }
+
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
       Postgresql::Server::Database[$db]->Postgresql_psql[$grant_cmd]
     }
@@ -102,6 +106,10 @@ define postgresql::server::grant (
       Postgresql::Server::Role[$role]<-Postgresql_psql[$revoke_cmd]
     }
   
+    if($role != undef and defined(Postgresql::Server::User[$role])) {
+      Postgresql::Server::User[$role]<-Postgresql_psql[$revoke_cmd]
+    }
+
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
       Postgresql::Server::Database[$db]<-Postgresql_psql[$revoke_cmd]
     }

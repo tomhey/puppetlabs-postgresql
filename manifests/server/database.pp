@@ -7,12 +7,27 @@ define postgresql::server::database(
   $encoding   = $postgresql::server::encoding,
   $locale     = $postgresql::server::locale,
   $istemplate = false,
-  $connect_settings = $postgresql::server::default_connection_settings,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $user          = $postgresql::server::user
   $group         = $postgresql::server::group
   $psql_path     = $postgresql::server::psql_path
-  $version       = $postgresql::server::version
+
+  if has_key( $connect_settings, 'DBVERSION') {
+    $version = $connect_settings['DBVERSION']
+  } else {
+    $version = $postgresql::server::version
+  }
+
+  if has_key( $connect_settings, 'DBTYPE') {
+    $db_type = $connect_settings['DBTYPE']
+  } else {
+    $db_type = 'POSTGRES'
+  }
+
+  if ( $db_type != 'POSTGRES' and $db_type != 'REDSHIFT' ) {
+    fail("Unknown value for DBTYPE '${db_type}'.")
+  }
 
   # Set the defaults for the postgresql_psql resource
   Postgresql_psql {
@@ -24,9 +39,8 @@ define postgresql::server::database(
 
   if ($ensure == 'present') {
 
-    # Optionally set the locale switch. Older versions of createdb may not accept
-    # --locale, so if the parameter is undefined its safer not to pass it.
-    if ($version != '8.1') {
+    # Strip option from unsupported versions
+    if ( versioncmp($version, '8.4') >= 0 ) {
       $locale_option = $locale ? {
         undef   => '',
         default => "LC_COLLATE=${locale} LC_CTYPE=${locale}",
@@ -46,9 +60,14 @@ define postgresql::server::database(
       undef   => '',
       default => "TABLESPACE='${tablespace}'",
     }
-  
+
+    $template_option = $db_type ? {
+      'REDSHIFT' => '',
+      default    => 'TEMPLATE=template0',
+    }
+
     postgresql_psql { "Create db '${dbname}'":
-      command => "CREATE DATABASE ${dbname} WITH OWNER=${owner} TEMPLATE=template0 ${encoding_option} ${locale_option} ${tablespace_option}",
+      command => "CREATE DATABASE ${dbname} WITH OWNER=${owner} ${template_option} ${encoding_option} ${locale_option} ${tablespace_option}",
       unless  => "SELECT datname FROM pg_database WHERE datname='${dbname}'",
       require => Class['postgresql::server']
     }~>

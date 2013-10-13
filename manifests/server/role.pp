@@ -10,18 +10,29 @@ define postgresql::server::role(
   $replication      = false,
   $connection_limit = '-1',
   $username         = $title,
-  $connect_settings = $postgresql::server::default_connection_settings,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group
   $psql_path  = $postgresql::server::psql_path
-  $version    = $postgresql::server::version
+
+  if has_key( $connect_settings, 'DBVERSION') {
+    $version = $connect_settings['DBVERSION']
+  } else {
+    $version = $postgresql::server::version
+  }
 
   $login_sql       = $login       ? { true => 'LOGIN',       default => 'NOLOGIN' }
   $createrole_sql  = $createrole  ? { true => 'CREATEROLE',  default => 'NOCREATEROLE' }
   $createdb_sql    = $createdb    ? { true => 'CREATEDB',    default => 'NOCREATEDB' }
   $superuser_sql   = $superuser   ? { true => 'SUPERUSER',   default => 'NOSUPERUSER' }
-  $replication_sql = $replication ? { true => 'REPLICATION', default => 'NOREPLICATION' }
+
+  if ( versioncmp($version, '9.1') >= 0 ) {
+    $replication_sql = $replication ? { true => 'REPLICATION', default => 'NOREPLICATION' }
+  } else {
+    $replication_sql = ""
+  }
+
   if ($password_hash != false) {
     $password_sql = "ENCRYPTED PASSWORD '${password_hash}'"
   } else {
@@ -58,16 +69,17 @@ define postgresql::server::role(
   
     postgresql_psql {"ALTER ROLE \"${username}\" ${login_sql}":
       unless => "SELECT rolname FROM pg_roles WHERE rolname='${username}' and rolcanlogin=${login}",
-    }
-  
-    if(versioncmp($version, '9.1') >= 0) {
-      postgresql_psql {"ALTER ROLE \"${username}\" ${replication_sql}":
-        unless => "SELECT rolname FROM pg_roles WHERE rolname='${username}' and rolreplication=${replication}",
-      }
-    }
+    }->
   
     postgresql_psql {"ALTER ROLE \"${username}\" CONNECTION LIMIT ${connection_limit}":
       unless => "SELECT rolname FROM pg_roles WHERE rolname='${username}' and rolconnlimit=${connection_limit}",
+    }
+
+    if(versioncmp($version, '9.1') >= 0) {
+      postgresql_psql {"ALTER ROLE \"${username}\" ${replication_sql}":
+        unless => "SELECT rolname FROM pg_roles WHERE rolname='${username}' and rolreplication=${replication}",
+        require => Postgresql_psql["Create role ${title}"],
+      }
     }
   
     if $password_hash {
