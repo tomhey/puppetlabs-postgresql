@@ -108,8 +108,7 @@ define postgresql::server::user(
             environment => join_keys_to_values( merge($connect_settings, { "PGUSER"     => "$username",
                                                                            "PGPASSWORD" => "$password_hash" } ), "="),
             command     => "/bin/true",
-            unless      => "${psql_path} -c 'select 1;'",
-            logoutput   => true,
+            unless      => "${psql_path} -t -c 'select 1;'",
     
             require => Postgresql_psql["Create user ${title}"],
             

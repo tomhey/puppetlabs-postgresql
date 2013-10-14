@@ -24,18 +24,25 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
 
     if ( resource[:onlyif] and !resource[:onlyif].empty? )
 
-      output, status = run_check_sql_command(resource[:onlyif])
+      onlyif_conditions = resource[:onlyif].kind_of?(Array) ? resource[:onlyif] : [ resource[:onlyif] ]
 
-      if status != 0
-        self.fail("Error evaluating 'onlyif' clause: '#{output}'")
-      end
-      result_count = output.strip.to_i
+      onlyif_conditions.each { |condition| 
 
-      # The 'onlyif' query indicates we should execute
-      #  the command by returning rows
-      if result_count < 1
-        onlyif_check = false
-      end
+        output, status = run_check_sql_command(condition)
+    
+        if status != 0
+          self.fail("Error evaluating 'onlyif' clause: '#{output}'")
+        end
+        result_count = output.strip.to_i
+    
+        # The 'onlyif' query indicates we should execute
+        #  the command by returning rows
+        if result_count < 1
+          onlyif_check = false
+          break
+        end
+
+      }
 
     end
 

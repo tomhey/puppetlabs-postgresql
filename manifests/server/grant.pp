@@ -38,17 +38,32 @@ define postgresql::server::grant (
       validate_string($_privilege,'CREATE','CONNECT','TEMPORARY','TEMP','ALL',
         'ALL PRIVILEGES')
       $unless_function = 'has_database_privilege'
+      $unless_object_drop_test = "SELECT datname FROM pg_database WHERE datname='${object_name}'"
       $on_db = $psql_db
     }
     'TABLE': {
       validate_string($_privilege,'SELECT','INSERT','UPDATE','REFERENCES',
         'ALL','ALL PRIVILEGES')
       $unless_function = 'has_table_privilege'
+      $unless_object_drop_test = "SELECT tablename FROM pg_tables WHERE tablename='${object_name}'"
       $on_db = $db
     }
     default: {
       fail("Missing privilege validation for object type ${_object_type}")
     }
+  }
+
+  if has_key( $connect_settings, 'DBVERSION') {
+    $version = $connect_settings['DBVERSION']
+  } else {
+    $version = $postgresql::server::version
+  }
+
+  # From 8.1 or later create user is an alias for create role
+  if ( versioncmp($version, '8.1') >= 0 ) {
+    $unless_role_drop_test = "SELECT rolname FROM pg_roles WHERE rolname='${role}'"
+  } else {
+    $unless_role_drop_test = "SELECT usename FROM pg_user WHERE usename='${role}'"
   }
 
   # TODO: this is a terrible hack; if they pass "ALL" as the desired privilege,
@@ -98,7 +113,14 @@ define postgresql::server::grant (
       psql_group => $group,
       psql_path  => $psql_path,
       connect_settings => $connect_settings,
-      onlyif     => "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
+
+      # Check the role and object exist before has_X_privilege function call
+      #  as it returns an error if the role or object does not exists
+      onlyif     => [
+                      $unless_role_drop_test,
+                      $unless_object_drop_test,
+                      "SELECT 1 WHERE ${unless_function}('${role}', '${object_name}', '${unless_privilege}')",
+                    ],
       require    => Class['postgresql::server']
     }
   
