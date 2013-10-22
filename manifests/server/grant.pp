@@ -82,7 +82,8 @@ define postgresql::server::grant (
   if ($ensure == 'present') {
 
     $grant_cmd = "GRANT ${_privilege} ON ${_object_type} \"${object_name}\" TO \"${role}\""
-    postgresql_psql { $grant_cmd:
+    postgresql_psql { "${title} - ${grant_cmd}":
+      command    => $grant_cmd,
       db         => $on_db,
       psql_user  => $psql_user,
       psql_group => $group,
@@ -93,21 +94,22 @@ define postgresql::server::grant (
     }
   
     if($role != undef and defined(Postgresql::Server::Role[$role])) {
-      Postgresql::Server::Role[$role]->Postgresql_psql[$grant_cmd]
+      Postgresql::Server::Role[$role]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
   
     if($role != undef and defined(Postgresql::Server::User[$role])) {
-      Postgresql::Server::User[$role]->Postgresql_psql[$grant_cmd]
+      Postgresql::Server::User[$role]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
 
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
-      Postgresql::Server::Database[$db]->Postgresql_psql[$grant_cmd]
+      Postgresql::Server::Database[$db]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
 
   } elsif ($ensure == 'absent') {
 
     $revoke_cmd = "REVOKE ${_privilege} ON ${_object_type} \"${object_name}\" FROM \"${role}\""
-    postgresql_psql { $revoke_cmd:
+    postgresql_psql { "${title} - ${revoke_cmd}":
+      command    => $revoke_cmd,
       db         => $on_db,
       psql_user  => $psql_user,
       psql_group => $group,
@@ -125,15 +127,15 @@ define postgresql::server::grant (
     }
   
     if($role != undef and defined(Postgresql::Server::Role[$role])) {
-      Postgresql::Server::Role[$role]<-Postgresql_psql[$revoke_cmd]
+      Postgresql::Server::Role[$role]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
   
     if($role != undef and defined(Postgresql::Server::User[$role])) {
-      Postgresql::Server::User[$role]<-Postgresql_psql[$revoke_cmd]
+      Postgresql::Server::User[$role]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
 
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
-      Postgresql::Server::Database[$db]<-Postgresql_psql[$revoke_cmd]
+      Postgresql::Server::Database[$db]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
 
   } else {
