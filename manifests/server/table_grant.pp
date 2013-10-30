@@ -9,6 +9,7 @@ define postgresql::server::table_grant(
   $psql_db   = undef,
   $psql_user = undef
   $connect_settings = undef,
+  server_id,
 ) {
   postgresql::server::grant { "table:${name}":
     ensure      => $ensure,
@@ -20,5 +21,6 @@ define postgresql::server::table_grant(
     psql_db     => $psql_db,
     psql_user   => $psql_user,
     connect_settings => $connect_settings,
+    server_id   => $server_id,
   }
 }

@@ -11,6 +11,7 @@ define postgresql::server::role(
   $connection_limit = '-1',
   $username         = $title,
   $connect_settings = $postgresql::server::default_connect_settings,
+  $server_id,
 ) {
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group

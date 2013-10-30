@@ -8,6 +8,7 @@ define postgresql::server::user(
   $connection_limit = '-1',
   $username         = $title,
   $connect_settings = $postgresql::server::default_connect_settings,
+  $server_id,
 ) {
 
   if has_key( $connect_settings, 'DBVERSION') {
@@ -39,6 +40,7 @@ define postgresql::server::user(
       connection_limit => $connection_limit,
       username         => $username,
       connect_settings => $connect_settings,
+      server_id        => $server_id,
     }
 
   } else {

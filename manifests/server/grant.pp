@@ -9,6 +9,7 @@ define postgresql::server::grant (
   $psql_db     = $postgresql::server::user,
   $psql_user   = $postgresql::server::user,
   $connect_settings = $postgresql::server::default_connect_settings,
+  $server_id,
 ) {
   $group     = $postgresql::server::group
   $psql_path = $postgresql::server::psql_path
@@ -96,13 +97,22 @@ define postgresql::server::grant (
     if($role != undef and defined(Postgresql::Server::Role[$role])) {
       Postgresql::Server::Role[$role]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
+    if($role != undef and defined(Postgresql::Server::Role["${server_id}-${role}"])) {
+      Postgresql::Server::Role["${server_id}-${role}"]->Postgresql_psql["${title} - ${grant_cmd}"]
+    }
   
     if($role != undef and defined(Postgresql::Server::User[$role])) {
       Postgresql::Server::User[$role]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
+    if($role != undef and defined(Postgresql::Server::User["${server_id}-${role}"])) {
+      Postgresql::Server::User["${server_id}-${role}"]->Postgresql_psql["${title} - ${grant_cmd}"]
+    }
 
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
       Postgresql::Server::Database[$db]->Postgresql_psql["${title} - ${grant_cmd}"]
+    }
+    if($db != undef and defined(Postgresql::Server::Database["${server_id}-${db}"])) {
+      Postgresql::Server::Database["${server_id}-${db}"]->Postgresql_psql["${title} - ${grant_cmd}"]
     }
 
   } elsif ($ensure == 'absent') {
@@ -129,13 +139,22 @@ define postgresql::server::grant (
     if($role != undef and defined(Postgresql::Server::Role[$role])) {
       Postgresql::Server::Role[$role]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
+    if($role != undef and defined(Postgresql::Server::Role["${server_id}-${role}"])) {
+      Postgresql::Server::Role["${server_id}-${role}"]<-Postgresql_psql["${title} - ${revoke_cmd}"]
+    }
   
     if($role != undef and defined(Postgresql::Server::User[$role])) {
       Postgresql::Server::User[$role]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
+    if($role != undef and defined(Postgresql::Server::User["${server_id}-${role}"])) {
+      Postgresql::Server::User["${server_id}-${role}"]<-Postgresql_psql["${title} - ${revoke_cmd}"]
+    }
 
     if($db != undef and defined(Postgresql::Server::Database[$db])) {
       Postgresql::Server::Database[$db]<-Postgresql_psql["${title} - ${revoke_cmd}"]
+    }
+    if($db != undef and defined(Postgresql::Server::Database["${server_id}-${db}"])) {
+      Postgresql::Server::Database["${server_id}-${db}"]<-Postgresql_psql["${title} - ${revoke_cmd}"]
     }
 
   } else {

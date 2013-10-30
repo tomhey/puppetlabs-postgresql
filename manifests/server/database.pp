@@ -8,6 +8,7 @@ define postgresql::server::database(
   $locale     = $postgresql::server::locale,
   $istemplate = false,
   $connect_settings = $postgresql::server::default_connect_settings,
+  $server_id,
 ) {
   $user          = $postgresql::server::user
   $group         = $postgresql::server::group
@@ -66,7 +67,7 @@ define postgresql::server::database(
       default    => 'TEMPLATE=template0',
     }
 
-    postgresql_psql { "${title} - Create db '${dbname}'":
+    postgresql_psql { "${server_id} - Create db '${dbname}'":
       command => "CREATE DATABASE ${dbname} WITH OWNER=${owner} ${template_option} ${encoding_option} ${locale_option} ${tablespace_option}",
       unless  => "SELECT datname FROM pg_database WHERE datname='${dbname}'",
       require => Class['postgresql::server']
@@ -74,24 +75,24 @@ define postgresql::server::database(
   
     # This will prevent users from connecting to the database unless they've been
     #  granted privileges.
-    postgresql_psql { "${title} - Revoke public privilege '${dbname}'":
+    postgresql_psql { "${server_id} - Revoke public privilege '${dbname}'":
       command     => "REVOKE ${public_revoke_privilege} ON DATABASE \"${dbname}\" FROM public",
       refreshonly => true,
     }->
   
-    postgresql_psql {"${title} - UPDATE pg_database SET datistemplate = ${istemplate} WHERE datname = '${dbname}'":
+    postgresql_psql {"${server_id} - UPDATE pg_database SET datistemplate = ${istemplate} WHERE datname = '${dbname}'":
       command => "UPDATE pg_database SET datistemplate = ${istemplate} WHERE datname = '${dbname}'",
       unless  => "SELECT datname FROM pg_database WHERE datname = '${dbname}' AND datistemplate = ${istemplate}",
     }
   
     # Build up dependencies on tablespace
     if($tablespace != undef and defined(Postgresql::Server::Tablespace[$tablespace])) {
-      Postgresql::Server::Tablespace[$tablespace]->Postgresql_psql["${title} - Create db '${dbname}'"]
+      Postgresql::Server::Tablespace[$tablespace]->Postgresql_psql["${server_id} - Create db '${dbname}'"]
     }
 
   } elsif ($ensure == 'absent') {
 
-    postgresql_psql { "${title} - Drop db '${dbname}'":
+    postgresql_psql { "${server_id} - Drop db '${dbname}'":
       command => "DROP DATABASE ${dbname}",
       onlyif  => "SELECT datname FROM pg_database WHERE datname='${dbname}'",
       require => Class['postgresql::server']
@@ -99,7 +100,7 @@ define postgresql::server::database(
 
     # Build up dependencies on tablespace
     if($tablespace != undef and defined(Postgresql::Server::Tablespace[$tablespace])) {
-      Postgresql::Server::Tablespace[$tablespace]<-Postgresql_psql["${title} - Drop db '${dbname}'"]
+      Postgresql::Server::Tablespace[$tablespace]<-Postgresql_psql["${server_id} - Drop db '${dbname}'"]
     }
 
 
