@@ -53,7 +53,7 @@ define postgresql::server::user(
     $superuser_sql   = $superuser   ? { true => 'CREATEUSER',  default => 'NOCREATEUSER' }
   
     if ($password_hash != false) {
-      $password_sql = "ENCRYPTED PASSWORD '${password_hash}'"
+      $password_sql = "PASSWORD '${password_hash}'"
     } else {
       $password_sql = ''
     }
