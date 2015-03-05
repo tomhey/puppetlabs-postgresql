@@ -17,7 +17,7 @@ define postgresql::server::database(
 
   # If possible use the version of the remote database, otherwise
   # fallback to our local DB version
-  if has_key( $connect_settings, 'DBVERSION') {
+  if $connect_settings != undef and has_key( $connect_settings, 'DBVERSION') {
     $version = $connect_settings['DBVERSION']
   } else {
     $version = $postgresql::server::_version
@@ -36,7 +36,7 @@ define postgresql::server::database(
   if ($version != '8.1') {
     $locale_option = $locale ? {
       undef   => '',
-      default => "--locale=${locale} ",
+      default => "LC_COLLATE=${locale} LC_CTYPE=${locale}",
     }
     $public_revoke_privilege = 'CONNECT'
   } else {
@@ -44,18 +44,23 @@ define postgresql::server::database(
     $public_revoke_privilege = 'ALL'
   }
 
+  $template_option = $template ? {
+    undef   => '',
+    default => "TEMPLATE=${template}",
+  }
+
   $encoding_option = $encoding ? {
     undef   => '',
-    default => "--encoding '${encoding}' ",
+    default => "ENCODING=${encoding}",
   }
 
   $tablespace_option = $tablespace ? {
     undef   => '',
-    default => "--tablespace='${tablespace}' ",
+    default => "TABLESPACE=${tablespace}",
   }
 
   postgresql_psql { "Create db '${dbname}'":
-    command => "CREATE DATABASE ${dbname} WITH OWNER=${owner} ${template} ${encoding_option} ${locale_option} ${tablespace_option}",
+    command => "CREATE DATABASE ${dbname} WITH OWNER=${owner} ${template_option} ${encoding_option} ${locale_option} ${tablespace_option}",
     unless  => "SELECT datname FROM pg_database WHERE datname='${dbname}'",
     db      => $default_db,
     require => Class['postgresql::server::service']

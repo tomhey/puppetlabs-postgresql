@@ -13,13 +13,13 @@
 # }
 #
 define postgresql::server::schema(
-  $db,
+  $db = $postgresql::server::default_database,
   $owner  = undef,
   $schema = $title,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $user      = $postgresql::server::user
   $group     = $postgresql::server::group
-  $port      = $postgresql::server::port
   $psql_path = $postgresql::server::psql_path
   $version   = $postgresql::server::_version
 
@@ -28,7 +28,7 @@ define postgresql::server::schema(
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
-    port       => $port,
+    connect_settings => $connect_settings,
   }
 
   $schema_title   = "Create Schema '${schema}'"

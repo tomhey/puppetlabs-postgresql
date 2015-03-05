@@ -18,7 +18,7 @@ define postgresql::server::role(
 
   # If possible use the version of the remote database, otherwise
   # fallback to our local DB version
-  if has_key( $connect_settings, 'DBVERSION') {
+  if $connect_settings != undef and has_key( $connect_settings, 'DBVERSION') {
     $version = $connect_settings['DBVERSION']
   } else {
     $version = $postgresql::server::_version

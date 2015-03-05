@@ -4,7 +4,7 @@ define postgresql::server::database_grant(
   $db,
   $role,
   $psql_db   = undef,
-  $psql_user = undef
+  $psql_user = undef,
   $connect_settings = undef,
 ) {
   postgresql::server::grant { "database:${name}":
