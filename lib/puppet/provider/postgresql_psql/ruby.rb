@@ -11,26 +11,26 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
       sql = "set search_path to #{Array(resource[:search_path]).join(',')}; #{sql}"
     end
 
+    environment = resource[:connect_settings] ? resource[:connect_settings] : Hash.new
+
     command = [resource[:psql_path]]
-    command.push("-d", resource[:db]) if resource[:db]
-    command.push("-p", resource[:port]) if resource[:port]
-    command.push("-h", resource[:host]) if resource[:host]
+    command.push("-d", resource[:db]) if ( resource[:db] and !environment.key?('PGDATABASE') )
     command.push("-t", "-c", sql)
 
     if resource[:cwd]
       Dir.chdir resource[:cwd] do
-        run_command(command, resource[:psql_user], resource[:psql_group])
+        run_command(command, resource[:psql_user], resource[:psql_group], environment)
       end
     else
-      run_command(command, resource[:psql_user], resource[:psql_group])
+      run_command(command, resource[:psql_user], resource[:psql_group], environment)
     end
   end
 
   private
 
-  def run_command(command, user, group)
+  def run_command(command, user, group, environment)
     if Puppet::PUPPETVERSION.to_f < 3.4
-      Puppet::Util::SUIDManager.run_and_capture(command, user, group)
+      Puppet::Util::SUIDManager.run_and_capture(command, user, group, { :custom_environment => environment })
     else
       output = Puppet::Util::Execution.execute(command, {
         :uid                => user,
@@ -38,7 +38,7 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
         :failonfail         => false,
         :combine            => true,
         :override_locale    => true,
-        :custom_environment => {}
+	:custom_environment => environment,
       })
       [output, $CHILD_STATUS.dup]
     end

@@ -52,12 +52,8 @@ Puppet::Type.newtype(:postgresql_psql) do
     desc "The name of the database to execute the SQL command against."
   end
 
-  newparam(:host) do
-    desc "The host to run the PSQL against"
-  end
-
-  newparam(:port) do
-    desc "The port of the database server to execute the SQL command against."
+  newparam(:connect_settings) do
+    desc "Connection settings that will be used when connecting to postgres"
   end
 
   newparam(:search_path) do

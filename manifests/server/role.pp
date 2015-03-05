@@ -4,18 +4,25 @@ define postgresql::server::role(
   $createdb         = false,
   $createrole       = false,
   $db               = $postgresql::server::default_database,
-  $port             = $postgresql::server::port,
   $login            = true,
   $inherit          = true,
   $superuser        = false,
   $replication      = false,
   $connection_limit = '-1',
-  $username         = $title
+  $username         = $title,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group
   $psql_path  = $postgresql::server::psql_path
-  $version    = $postgresql::server::_version
+
+  # If possible use the version of the remote database, otherwise
+  # fallback to our local DB version
+  if has_key( $connect_settings, 'DBVERSION') {
+    $version = $connect_settings['DBVERSION']
+  } else {
+    $version = $postgresql::server::_version
+  }
 
   $login_sql       = $login       ? { true => 'LOGIN',       default => 'NOLOGIN' }
   $inherit_sql     = $inherit     ? { true => 'INHERIT',     default => 'NOINHERIT' }
@@ -31,10 +38,10 @@ define postgresql::server::role(
 
   Postgresql_psql {
     db         => $db,
-    port       => $port,
     psql_user  => $psql_user,
     psql_group => $psql_group,
     psql_path  => $psql_path,
+    connect_settings => $connect_settings,
     require    => [ Postgresql_psql["CREATE ROLE \"${username}\" ${password_sql} ${login_sql} ${createrole_sql} ${createdb_sql} ${superuser_sql} ${replication_sql} CONNECTION LIMIT ${connection_limit}"], Class['postgresql::server'] ],
   }
 

@@ -225,9 +225,6 @@ This setting is used to specify the name of the default database to connect with
 ####`initdb_path`
 Path to the `initdb` command.
 
-####`createdb_path`
-Path to the `createdb` command.
-
 ####`psql_path`
 Path to the `psql` command.
 
@@ -340,9 +337,6 @@ List of strings for access control for connection method, users, databases, IPv6
 
 ####`initdb_path`
 Path to the `initdb` command.
-
-####`createdb_path`
-Path to the `createdb` command.
 
 ####`psql_path`
 Path to the `psql` command.

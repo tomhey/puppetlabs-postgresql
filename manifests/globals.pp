@@ -17,11 +17,11 @@ class postgresql::globals (
   $default_database     = undef,
 
   $initdb_path          = undef,
-  $createdb_path        = undef,
   $psql_path            = undef,
   $pg_hba_conf_path     = undef,
   $pg_ident_conf_path   = undef,
   $postgresql_conf_path = undef,
+  $default_connect_settings = undef,
 
   $pg_hba_conf_defaults = undef,
 

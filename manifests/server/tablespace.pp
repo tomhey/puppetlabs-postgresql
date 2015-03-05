@@ -2,18 +2,18 @@
 define postgresql::server::tablespace(
   $location,
   $owner   = undef,
-  $spcname = $title
+  $spcname = $title,
+  $connect_settings = $postgresql::server::default_connect_settings,
 ) {
   $user      = $postgresql::server::user
   $group     = $postgresql::server::group
-  $port      = $postgresql::server::port
   $psql_path = $postgresql::server::psql_path
 
   Postgresql_psql {
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
-    port       => $port,
+    connect_settings => $connect_settings,
   }
 
   if ($owner == undef) {
