@@ -23,11 +23,19 @@ define postgresql::server::database(
     $version = $postgresql::server::_version
   }
 
+  # If the connection settings do not contain a port, then use the local server port
+  if $connect_settings != undef and has_key( $connect_settings, 'PGPORT') {
+    $port = undef;
+  } else {
+    $port = $postgresql::server::port;
+  }
+
   # Set the defaults for the postgresql_psql resource
   Postgresql_psql {
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
+    port       => $port,
     connect_settings => $connect_settings,
   }
 

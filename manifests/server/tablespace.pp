@@ -9,10 +9,18 @@ define postgresql::server::tablespace(
   $group     = $postgresql::server::group
   $psql_path = $postgresql::server::psql_path
 
+  # If the connection settings do not contain a port, then use the local server port
+  if $connect_settings != undef and has_key( $connect_settings, 'PGPORT') {
+    $port = undef;
+  } else {
+    $port = $postgresql::server::port;
+  }
+
   Postgresql_psql {
     psql_user  => $user,
     psql_group => $group,
     psql_path  => $psql_path,
+    port       => $port,
     connect_settings => $connect_settings,
   }
 

@@ -4,6 +4,7 @@ define postgresql::server::role(
   $createdb         = false,
   $createrole       = false,
   $db               = $postgresql::server::default_database,
+  $port             = undef,
   $login            = true,
   $inherit          = true,
   $superuser        = false,
@@ -15,6 +16,17 @@ define postgresql::server::role(
   $psql_user  = $postgresql::server::user
   $psql_group = $postgresql::server::group
   $psql_path  = $postgresql::server::psql_path
+
+  #
+  # Port, order of precedence: $port parameter, $connect_settings[PGPORT], $postgresql::server::port
+  #
+  if $port != undef {
+    $port_override = $port
+  } elsif has_key( $connect_settings, 'PGPORT') {
+    $port_override = undef
+  } else {
+    $port_override = $postgresql::server::port
+  }
 
   # If possible use the version of the remote database, otherwise
   # fallback to our local DB version
@@ -38,6 +50,7 @@ define postgresql::server::role(
 
   Postgresql_psql {
     db         => $db,
+    port       => $port_override,
     psql_user  => $psql_user,
     psql_group => $psql_group,
     psql_path  => $psql_path,

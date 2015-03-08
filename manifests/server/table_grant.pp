@@ -5,6 +5,7 @@ define postgresql::server::table_grant(
   $table,
   $db,
   $role,
+  $port      = undef,
   $psql_db   = undef,
   $psql_user = undef,
   $connect_settings = undef,
@@ -12,6 +13,7 @@ define postgresql::server::table_grant(
   postgresql::server::grant { "table:${name}":
     role        => $role,
     db          => $db,
+    port        => $port,
     privilege   => $privilege,
     object_type => 'TABLE',
     object_name => $table,

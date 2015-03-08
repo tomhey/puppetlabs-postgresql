@@ -14,7 +14,8 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
     environment = resource[:connect_settings] ? resource[:connect_settings] : Hash.new
 
     command = [resource[:psql_path]]
-    command.push("-d", resource[:db]) if ( resource[:db] and !environment.key?('PGDATABASE') )
+    command.push("-d", resource[:db]) if resource[:db]
+    command.push("-p", resource[:port]) if resource[:port]
     command.push("-t", "-c", sql)
 
     if resource[:cwd]
