@@ -847,8 +847,6 @@ Hash of environment variable used when connecting to a remote server. Defaults t
 
 ###Resource: postgresql::validate\_db\_connection
 
-TODO: Question, should we add support for connect_settings here?
-
 This resource can be utilised inside composite manifests to validate that a client has a valid connection with a remote PostgreSQL database. It can be ran from any node where the PostgreSQL client software is installed to validate connectivity before commencing other dependent tasks in your Puppet manifests, so it is often used when chained to other tasks such as: starting an application server, performing a database migration.
 
 Example usage:
@@ -880,6 +878,9 @@ Username to connect with. Defaults to 'undef', which when using a unix socket an
 
 ####`database_password`
 Password to connect with. Can be left blank, but that is not recommended.
+
+####`connect_settings`
+Hash of environment variable used when connecting to a remote server, this is an alternative to providing individual parameters (database_host, etc.). If provided the individual parameters take precedence.
 
 ####`run_as`
 The user to run the `psql` command with for authenticiation. This is important when trying to connect to a database locally using Unix sockets and `ident` authentication. It is not needed for remote testing.
