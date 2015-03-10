@@ -15,7 +15,7 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
       it "executes with the given psql_path on the given DB" do
         expect(provider).to receive(:run_command).with(['psql', '-d',
           attributes[:db], '-t', '-c', 'SELECT something'], 'postgres',
-          'postgres')
+          'postgres', {})
 
         provider.run_sql_command("SELECT something")
       end
@@ -33,7 +33,7 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
         expect(Dir).to receive(:chdir).with(attributes[:cwd]).and_yield
         expect(provider).to receive(:run_command).with([attributes[:psql_path],
           '-d', attributes[:db], '-t', '-c', 'SELECT something'],
-          attributes[:psql_user], attributes[:psql_group])
+          attributes[:psql_user], attributes[:psql_group], {})
 
         provider.run_sql_command("SELECT something")
       end
@@ -46,7 +46,7 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
       it "executes with the given search_path" do
         expect(provider).to receive(:run_command).with(['psql', '-t', '-c',
           'set search_path to schema1; SELECT something'],
-          'postgres', 'postgres')
+          'postgres', 'postgres', {})
 
         provider.run_sql_command("SELECT something")
       end
@@ -60,7 +60,8 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
         expect(provider).to receive(:run_command).with(['psql', '-t', '-c',
           'set search_path to schema1,schema2; SELECT something'],
           'postgres',
-          'postgres'
+          'postgres',
+          {}
         )
 
         provider.run_sql_command("SELECT something")
@@ -74,20 +75,19 @@ describe Puppet::Type.type(:postgresql_psql).provider(:ruby) do
         expect(provider).to receive(:run_command).with(["psql",
         "-p", "5555",
         "-t", "-c", "SELECT something"],
-        "postgres", "postgres")
+        "postgres", "postgres", {} )
 
         provider.run_sql_command("SELECT something")
       end
     end
-    describe "with host string" do
-      let(:attributes) do { :host => '127.0.0.1' } end
+    describe "with connect_settings" do
+      let(:attributes) do { :connect_settings => { :PGHOST => '127.0.0.1' } } end
 
       it "executes with the given host" do
         expect(provider).to receive(:run_command).with(["psql",
-          "-h", "127.0.0.1",
           "-t", "-c",
           "SELECT something"],
-          "postgres", "postgres")
+          "postgres", "postgres", { :PGHOST => '127.0.0.1' } )
 
         provider.run_sql_command("SELECT something")
       end

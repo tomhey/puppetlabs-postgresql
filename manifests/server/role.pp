@@ -22,7 +22,7 @@ define postgresql::server::role(
   #
   if $port != undef {
     $port_override = $port
-  } elsif has_key( $connect_settings, 'PGPORT') {
+  } elsif $connect_setting != undef and has_key( $connect_settings, 'PGPORT') {
     $port_override = undef
   } else {
     $port_override = $postgresql::server::port

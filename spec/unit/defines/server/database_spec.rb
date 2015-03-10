@@ -21,7 +21,7 @@ describe 'postgresql::server::database', :type => :define do
   end
 
   it { is_expected.to contain_postgresql__server__database('test') }
-  it { is_expected.to contain_postgresql_psql("Check for existence of db 'test'") }
+  it { is_expected.to contain_postgresql_psql("Create db 'test'") }
 
   context "with comment set to 'test comment'" do
     let (:params) {{ :comment => 'test comment' }}
