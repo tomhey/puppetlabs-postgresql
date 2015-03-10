@@ -32,8 +32,8 @@ describe 'postgresql_psql', :unless => UNSUPPORTED_PLATFORMS.include?(fact('osfa
     run_different_host = <<-EOS
     postgresql_psql { 'run against different host':
       db            => 'postgres',
-      host          => '127.0.0.1',
       command       => 'select 1',
+      connect_settings => { 'PGHOST' => '127.0.0.1' },
     }
     EOS
 
